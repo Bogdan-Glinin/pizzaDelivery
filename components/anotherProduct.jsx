@@ -3,7 +3,7 @@ import styled from "styled-components/native";
 const ProductItem = styled.View`
   height: 115px;
   margin: 10px;
-  margin-left: 40px;
+  margin-left: 60px;
   flex-direction: row;
   align-items: center;
   border-width: 1px;
@@ -14,7 +14,7 @@ const ProductItem = styled.View`
 
 const ProductImage = styled.Image`
   position: relative;
-  left: -30px;
+  left: -50px;
   width: 60px;
   height: 100px;
 `;
@@ -26,10 +26,10 @@ const ProductTitle = styled.Text`
 `;
 
 const ProductDetails = styled.View`
+    justify-content: center;
   position: relative;
-  left: -20px;
+  left: -40px;
   flex: 1;
-  padding-top: 15px;
   height: 100%;
 `;
 
@@ -53,7 +53,7 @@ const ProductName = styled.Text`
   line-height: 12px;
 `
 
-export const Product = ({ productName, productPrice, productImg, productInfo }) => {
+export const AnotherProduct = ({ productName, productPrice, productImg, productInfo }) => {
   return (
     <ProductItem>
       <ProductImage
