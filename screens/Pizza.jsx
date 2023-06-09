@@ -3,6 +3,8 @@ import { View, Alert, Text, TouchableOpacity, StyleSheet } from "react-native";
 import styled from "styled-components/native";
 import axios from "axios";
 import { Loading } from "../components/Loading";
+import state from "../state/state";
+
 
 const ProductImage = styled.Image`
     width: 250px;
@@ -33,7 +35,8 @@ const ProductInfo = styled.Text`
 `;
 
 const ChooseSize = styled.View`
-    justify-content: space-between;
+    width: 93%;
+    justify-content: space-between ;
     flex-direction: row;
     margin-top: 30px;
     padding-left: 40px;
@@ -53,8 +56,6 @@ const SizeItem = styled.Text`
 const ToBasket = styled.Text`
     padding-top: 10px;
     padding-bottom: 10px;
-    padding-left: 85px;
-    padding-right: 85px;
     border-radius: 10px;
     background: #F15A24;
     width: 100%;
@@ -63,24 +64,25 @@ const ToBasket = styled.Text`
     font-size: 16px;
     line-height: 20px;
     color: #FFFFFF;
+    text-align: center;
 `;
 
 const styles = StyleSheet.create({
     component: {
-        height: 25,
-        width: 60,
+        height: 30,
+        width: 75,
         borderRadius: 10,
         backgroundColor: '#D9D9D9',
-        paddingTop: 3,
+        paddingTop: 5,
         textAlign: 'center',
         color: '#000000',
     },
     activeComponent: {
-        height: 25,
-        width: 60,
+        height: 30,
+        width: 75,
         borderRadius: 10,
         backgroundColor: '#F15A24',
-        paddingTop: 3,
+        paddingTop: 5,
         textAlign: 'center',
         color: "#FFFFFF"
     },
@@ -91,15 +93,20 @@ export const PizzaScreen = ({ route, navigation }) => {
     const [data, setData] = React.useState([]);
     const { id, title } = route.params;
     const [activeComponent, setActiveComponent] = useState('component2');
+    const [price, setPrice] = useState(0);
 
     const pushData = () => {
         axios
-            .post('https://647e12dcaf984710854ae6af.mockapi.io/users',
+            .post('https://64823f6d29fa1c5c5032c2e2.mockapi.io/basket',
                 {
-                    email: "e4po4mack@gmail.com",
-                    name: "Bogdan Glinin"
+                    userId: "1",
+                    productId: data.id,
+                    productType: data.type,
+                    productPrice: price,
+                    productCount: 1
 
                 })
+        navigation.navigate('Корзина');
     }
 
     React.useEffect(() => {
@@ -110,6 +117,7 @@ export const PizzaScreen = ({ route, navigation }) => {
             .get('https://647e12dcaf984710854ae6af.mockapi.io/Products/' + id)
             .then(({ data }) => {
                 setData(data);
+                setPrice(data.price[1]);
             })
             .catch(err => {
                 console.log(err);
@@ -131,6 +139,24 @@ export const PizzaScreen = ({ route, navigation }) => {
         setActiveComponent(componentName);
     };
 
+    const changePrice26 = () => {
+        setPrice(data.price[0]);
+    }
+
+    const changePrice30 = () => {
+        setPrice(data.price[1]);
+    }
+    const changePrice40 = () => {
+        setPrice(data.price[2]);
+    }
+
+    const pushDataToBasket = data;
+
+    const addToBasket = () => {
+        state.basket.push({ data: data, price: price })
+        navigation.navigate('Корзина');
+    };
+
     return (
         <View style={{ alignItems: 'center', flexDirection: "column", backgroundColor: '#fff' }}>
             <ProductImage source={{ uri: data.imageSrc }} />
@@ -139,15 +165,15 @@ export const PizzaScreen = ({ route, navigation }) => {
                 <Text style={{ marginTop: 3, fontWeight: 400, fontSize: 15, color: "rgba(0, 0, 0, 0.7)", lineHeight: 20 }}>Средняя 30 см, традиционное тесто, 575 г</Text>
                 <ProductInfo>{data.info}</ProductInfo>
                 <ChooseSize>
-                    <SizeItem onPress={() => handleComponentClick('component1')} style={[styles.component, activeComponent === 'component1' && styles.activeComponent]}>
+                    <SizeItem onPress={() => { handleComponentClick('component1'); changePrice26() }} style={[styles.component, activeComponent === 'component1' && styles.activeComponent]}>
                         26</SizeItem>
-                    <SizeItem onPress={() => handleComponentClick('component2')} style={[styles.component, activeComponent === 'component2' && styles.activeComponent,]}>
+                    <SizeItem onPress={() => { handleComponentClick('component2'); changePrice30() }} style={[styles.component, activeComponent === 'component2' && styles.activeComponent,]}>
                         30</SizeItem>
-                    <SizeItem onPress={() => handleComponentClick('component3')} style={[styles.component, activeComponent === 'component3' && styles.activeComponent]}
+                    <SizeItem onPress={() => { handleComponentClick('component3'); changePrice40() }} style={[styles.component, activeComponent === 'component3' && styles.activeComponent]}
                     >40</SizeItem>
                 </ChooseSize>
-                <TouchableOpacity style={{marginTop: 60}}>
-                    <ToBasket>В корзину за 459₽</ToBasket>
+                <TouchableOpacity onPress={pushData} style={{ marginTop: 60, }}>
+                    <ToBasket>В корзину за {price}₽</ToBasket>
                 </TouchableOpacity>
             </View>
         </View>

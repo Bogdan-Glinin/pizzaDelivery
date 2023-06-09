@@ -148,7 +148,7 @@ export const HomeScreen = ({ navigation }) => {
                 }}>
                   <Product key={obj.id}
                     productName={obj.name}
-                    productPrice={obj.price}
+                    productPrice={obj.price[0]}
                     productImg={obj.imageSrc}
                     productInfo={obj.info}
                   />
@@ -169,7 +169,7 @@ export const HomeScreen = ({ navigation }) => {
                 }}>
                   <AnotherProduct key={obj.id}
                     productName={obj.name}
-                    productPrice={obj.price}
+                    productPrice={obj.price[0]}
                     productImg={obj.imageSrc}
                     productInfo={obj.info}
                   />
@@ -189,7 +189,7 @@ export const HomeScreen = ({ navigation }) => {
                 }}>
                   <AnotherProduct key={obj.id}
                     productName={obj.name}
-                    productPrice={obj.price}
+                    productPrice={obj.price[0]}
                     productImg={obj.imageSrc}
                     productInfo={obj.info}
                   />
