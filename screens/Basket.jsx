@@ -6,6 +6,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { Loading } from "../components/Loading";
 import axios from "axios";
 import { ProductInBasketComponent } from "../components/ProductInBasket";
+import { userId } from "./Profile";
 
 const Stack = createNativeStackNavigator();
 
@@ -66,6 +67,24 @@ const CountOfProduct = styled.Text`
   padding-left: 15px;
 `;
 
+const CompliteOrederButton = styled.View`
+    margin-left: 10px;
+    margin-right: 10px;
+    margin-top: 20px;
+    background: #F15A24;
+    border-radius: 10px;
+`
+
+const CompliteOrederButtonText = styled.Text`
+padding-top: 12px;
+padding-bottom: 12px;
+text-align: center;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 16px;
+    color: #FFFFFF;
+`
+
 const SecondComponent = ({ navigation }) => {
     const [isLoading, setIsLoading] = React.useState(true);
     const [items, setItems] = React.useState([]);
@@ -79,6 +98,7 @@ const SecondComponent = ({ navigation }) => {
             .get("https://64823f6d29fa1c5c5032c2e2.mockapi.io/basket")
             .then(({ data }) => {
                 setProducts(data);
+                calculateTotal();
             })
             .catch((err) => {
                 console.log(err);
@@ -90,17 +110,22 @@ const SecondComponent = ({ navigation }) => {
     };
 
     const reload = useCallback( () => {
-        fetchBasket();
-        fetchProducts();
-        calculateTotal();
+        setIsLoading(true);
         
-    })
+        setTimeout(() => {
+            fetchProducts();
+            fetchBasket();
+           calculateTotal();
+        }, 0);   
+        setIsLoading(false);
+      }, [fetchProducts, fetchBasket, calculateTotal]);
 
     const fetchProducts =  () => {
          axios
             .get("https://647e12dcaf984710854ae6af.mockapi.io/Products")
             .then(({ data }) => {
                 setItems(data);
+                
           })
             .catch((err) => {
                 console.log(err);
@@ -112,22 +137,27 @@ const SecondComponent = ({ navigation }) => {
         let count = 0;
         let price = 0;
         products.forEach((obj) => {
-            count += obj.productCount;
-            price += obj.productPrice * obj.productCount;
+            if(obj.userId == userId){
+                count += obj.productCount;
+                price += obj.productPrice * obj.productCount;
+            }
         });
         setTotalCount(count);
         setTotalPrice(price);
     };
 
-    React.useEffect(reload, []);
+    React.useEffect(() =>{
+        fetchProducts();
+        fetchBasket();
+        calculateTotal()
+    }, []);
 
     if (isLoading) {
         return <Loading />;
     }
 
 
-
-    const Basket = products.filter((obj) => obj.userId === "1");
+    const Basket = products.filter((obj) => obj.userId === userId);
 
     if (!Basket[0]) {
         return (
@@ -190,6 +220,13 @@ const SecondComponent = ({ navigation }) => {
                         />
                     );
                 })}
+                <TouchableOpacity>
+                <CompliteOrederButton>
+                    <CompliteOrederButtonText>
+                        Оформить заказ на {totalPrice} ₽
+                    </CompliteOrederButtonText>
+                </CompliteOrederButton>
+                </TouchableOpacity>
             </ScrollView>
         );
     }

@@ -4,6 +4,7 @@ import styled from "styled-components/native";
 import axios from "axios";
 import { Loading } from "../components/Loading";
 import state from "../state/state";
+import { userId } from "./Profile";
 
 
 const ProductImage = styled.Image`
@@ -99,7 +100,7 @@ export const PizzaScreen = ({ route, navigation }) => {
         axios
             .post('https://64823f6d29fa1c5c5032c2e2.mockapi.io/basket',
                 {
-                    userId: "1",
+                    userId: userId,
                     productId: data.id,
                     productType: data.type,
                     productPrice: price,
@@ -157,25 +158,38 @@ export const PizzaScreen = ({ route, navigation }) => {
         navigation.navigate('Корзина');
     };
 
-    return (
-        <View style={{ alignItems: 'center', flexDirection: "column", backgroundColor: '#fff' }}>
-            <ProductImage source={{ uri: data.imageSrc }} />
-            <View style={{ paddingHorizontal: 10 }}>
-                <ProductName >{data.name}</ProductName>
-                <Text style={{ marginTop: 3, fontWeight: 400, fontSize: 15, color: "rgba(0, 0, 0, 0.7)", lineHeight: 20 }}>Средняя 30 см, традиционное тесто, 575 г</Text>
-                <ProductInfo>{data.info}</ProductInfo>
-                <ChooseSize>
-                    <SizeItem onPress={() => { handleComponentClick('component1'); changePrice26() }} style={[styles.component, activeComponent === 'component1' && styles.activeComponent]}>
-                        26</SizeItem>
-                    <SizeItem onPress={() => { handleComponentClick('component2'); changePrice30() }} style={[styles.component, activeComponent === 'component2' && styles.activeComponent,]}>
-                        30</SizeItem>
-                    <SizeItem onPress={() => { handleComponentClick('component3'); changePrice40() }} style={[styles.component, activeComponent === 'component3' && styles.activeComponent]}
-                    >40</SizeItem>
-                </ChooseSize>
-                <TouchableOpacity onPress={pushData} style={{ marginTop: 60, }}>
-                    <ToBasket>В корзину за {price}₽</ToBasket>
-                </TouchableOpacity>
+    if(userId != null){
+        return (
+            <View style={{ alignItems: 'center', flexDirection: "column", backgroundColor: '#fff' }}>
+                <ProductImage source={{ uri: data.imageSrc }} />
+                <View style={{ paddingHorizontal: 10 }}>
+                    <ProductName >{data.name}</ProductName>
+                    <Text style={{ marginTop: 3, fontWeight: 400, fontSize: 15, color: "rgba(0, 0, 0, 0.7)", lineHeight: 20 }}>Средняя 30 см, традиционное тесто, 575 г</Text>
+                    <ProductInfo>{data.info}</ProductInfo>
+                    <ChooseSize>
+                        <SizeItem onPress={() => { handleComponentClick('component1'); changePrice26() }} style={[styles.component, activeComponent === 'component1' && styles.activeComponent]}>
+                            26 см</SizeItem>
+                        <SizeItem onPress={() => { handleComponentClick('component2'); changePrice30() }} style={[styles.component, activeComponent === 'component2' && styles.activeComponent,]}>
+                            30 см</SizeItem>
+                        <SizeItem onPress={() => { handleComponentClick('component3'); changePrice40() }} style={[styles.component, activeComponent === 'component3' && styles.activeComponent]}
+                        >40 см</SizeItem>
+                    </ChooseSize>
+                    <TouchableOpacity onPress={pushData} style={{ marginTop: 60, }}>
+                        <ToBasket>В корзину за {price}₽</ToBasket>
+                    </TouchableOpacity>
+                </View>
             </View>
-        </View>
-    )
+        )
+    } else{
+        return (
+            <View style={{ alignItems: 'center', flexDirection: "column", backgroundColor: '#fff' }}>
+                <ProductImage source={{ uri: data.imageSrc }} />
+                <View style={{ paddingHorizontal: 10 }}>
+                    <ProductName >{data.name}</ProductName>
+                    <Text style={{ marginTop: 3, fontWeight: 400, fontSize: 15, color: "rgba(0, 0, 0, 0.7)", lineHeight: 20 }}>Средняя 30 см, традиционное тесто, 575 г</Text>
+                    <ProductInfo>{data.info}</ProductInfo>
+                </View>
+            </View>
+        )
+    }
 }

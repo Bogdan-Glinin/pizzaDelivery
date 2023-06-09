@@ -119,12 +119,11 @@ export const ProductInBasketComponent = ({ imageSrc, title, price, id, productCo
   const updateProductCount = async (newCount) => {
     try {
       await axios.put("https://64823f6d29fa1c5c5032c2e2.mockapi.io/basket/" + id, { productCount: newCount });
-      
+      reload(); // Вызываем функцию перезагрузки после успешного обновления
     } catch (error) {
       console.log(error);
       Alert.alert("Ошибка", "Не удалось обновить количество продукта");
     }
-    reload(); // Вызываем функцию перезагрузки после успешного обновления
   };
 
   return (

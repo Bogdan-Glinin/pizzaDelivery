@@ -7,6 +7,7 @@ import { HomeHeader } from "./HomeHeader";
 import { SomeComponent } from "./someComponent";
 import { Image } from "react-native";
 import {BasketScreen} from "../screens/Basket"
+import {Profile} from "../screens/Profile"
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -36,7 +37,7 @@ export const Navigation = () => {
     return (
         <NavigationContainer>
             <Tab.Navigator screenOptions={{headerShown: false, tabBarActiveTintColor: '#F15A24',}} initialRouteName="Меню">
-                <Tab.Screen name="Профиль" component={SomeComponent} options={{
+                <Tab.Screen name="Профиль" component={Profile} options={{
                         tabBarIcon: ({ color }) => (
                             <Image
                                 source={require("../images/profile.png")} // Изображение пункта меню
