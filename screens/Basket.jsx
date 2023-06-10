@@ -7,6 +7,7 @@ import { Loading } from "../components/Loading";
 import axios from "axios";
 import { ProductInBasketComponent } from "../components/ProductInBasket";
 import { userId } from "./Profile";
+import { useIsFocused } from "@react-navigation/native";
 
 const Stack = createNativeStackNavigator();
 
@@ -92,69 +93,94 @@ const SecondComponent = ({ navigation }) => {
     const [totalPrice, setTotalPrice] = React.useState(0);
     const [totalCount, setTotalCount] = React.useState(0);
 
-    const fetchBasket =  () => {
+    const reload = useCallback(() => {
         setIsLoading(true);
-        axios
+        fetchProducts().then(() => {
+            fetchBasket().then(() => {
+                setIsLoading(false);
+            });
+        });
+    }, []);
+
+    const fetchBasket = useCallback(() => {
+        return axios
             .get("https://64823f6d29fa1c5c5032c2e2.mockapi.io/basket")
             .then(({ data }) => {
                 setProducts(data);
-                calculateTotal();
+                calculateTotal(data);
             })
             .catch((err) => {
                 console.log(err);
                 Alert.alert("Ошибка", "Не удалось получить данные");
-            })
-            .finally(() => {
-                setIsLoading(false);
             });
-    };
+    }, []);
 
-    const reload = useCallback( () => {
-        setIsLoading(true);
-        
-        setTimeout(() => {
-            fetchProducts();
-            fetchBasket();
-           calculateTotal();
-        }, 0);   
-        setIsLoading(false);
-      }, [fetchProducts, fetchBasket, calculateTotal]);
-
-    const fetchProducts =  () => {
-         axios
-            .get("https://647e12dcaf984710854ae6af.mockapi.io/Products")
-            .then(({ data }) => {
-                setItems(data);
-                
-          })
-            .catch((err) => {
-                console.log(err);
-                Alert.alert("Ошибка", "Не удалось получить данные");
-            });
-    };
-
-    const calculateTotal = () => {
+    const calculateTotal = useCallback((basketData) => {
         let count = 0;
         let price = 0;
-        products.forEach((obj) => {
-            if(obj.userId == userId){
+        basketData.forEach((obj) => {
+            if (obj.userId === userId) {
                 count += obj.productCount;
                 price += obj.productPrice * obj.productCount;
             }
         });
         setTotalCount(count);
         setTotalPrice(price);
-    };
-
-    React.useEffect(() =>{
-        fetchProducts();
-        fetchBasket();
-        calculateTotal()
     }, []);
+
+    const fetchProducts = useCallback(() => {
+        return axios
+            .get("https://647e12dcaf984710854ae6af.mockapi.io/Products")
+            .then(({ data }) => {
+                setItems(data);
+            })
+            .catch((err) => {
+                console.log(err);
+                Alert.alert("Ошибка", "Не удалось получить данные");
+            });
+    }, []);
+
+
+    const confirmPurchase = () => {
+        axios
+          .post('https://64823f6d29fa1c5c5032c2e2.mockapi.io/history', {
+            totalPrice: totalPrice,
+            totalCount: totalCount,
+            userId: userId,
+          })
+          .then(() => {
+            // Фильтруем продукты
+            const filteredProducts = products.filter((obj) => obj.userId === userId);
+      
+            // Создаем промисы для удаления элементов в корзине
+            const deletePromises = filteredProducts.map((obj) => {
+              return axios.delete(
+                'https://64823f6d29fa1c5c5032c2e2.mockapi.io/basket/' + obj.id
+              );
+            });
+      
+            // Выполняем все промисы для удаления
+            return Promise.all(deletePromises);
+          })
+          .then(reload)
+          .then(() => {
+            navigation.navigate('Профиль');
+          });
+      };
+
+      const isFocused = useIsFocused();
+
+      useEffect(() => {
+        if (isFocused) {
+          // Код, который должен выполняться при каждом переходе на эту страницу
+          reload();
+        }
+      }, [isFocused]);
 
     if (isLoading) {
         return <Loading />;
     }
+
 
 
     const Basket = products.filter((obj) => obj.userId === userId);
@@ -211,6 +237,7 @@ const SecondComponent = ({ navigation }) => {
                     const Product = items.find((e) => e.id === obj.productId);
                     return (
                         <ProductInBasketComponent
+                            calculateTotal={calculateTotal}
                             reload={reload}
                             id={obj.id}
                             productCount={obj.productCount}
@@ -220,12 +247,12 @@ const SecondComponent = ({ navigation }) => {
                         />
                     );
                 })}
-                <TouchableOpacity>
-                <CompliteOrederButton>
-                    <CompliteOrederButtonText>
-                        Оформить заказ на {totalPrice} ₽
-                    </CompliteOrederButtonText>
-                </CompliteOrederButton>
+                <TouchableOpacity onPress={confirmPurchase}>
+                    <CompliteOrederButton>
+                        <CompliteOrederButtonText>
+                            Оформить заказ на {totalPrice} ₽
+                        </CompliteOrederButtonText>
+                    </CompliteOrederButton>
                 </TouchableOpacity>
             </ScrollView>
         );

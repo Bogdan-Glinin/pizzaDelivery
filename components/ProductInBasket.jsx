@@ -99,7 +99,7 @@ const ProductPrice = styled.Text`
     text-align: right;
 `
 
-export const ProductInBasketComponent = ({ imageSrc, title, price, id, productCount, reload }) => {
+export const ProductInBasketComponent = ({ imageSrc, title, price, id, productCount, reload, calculateTotal }) => {
   const [count, setCount] = React.useState(productCount);
 
   const incrementCount = () => {
@@ -119,11 +119,24 @@ export const ProductInBasketComponent = ({ imageSrc, title, price, id, productCo
   const updateProductCount = async (newCount) => {
     try {
       await axios.put("https://64823f6d29fa1c5c5032c2e2.mockapi.io/basket/" + id, { productCount: newCount });
+      // Вызываем функцию перезагрузки после успешного обновления
+    } catch (error) {
+      console.log(error);
+      Alert.alert("Ошибка", "Не удалось обновить количество продукта");
+    }
+    reload();
+  };
+
+  const deleteProduct = async (newCount) => {
+    try {
+      await axios.delete("https://64823f6d29fa1c5c5032c2e2.mockapi.io/basket/" + id);
       reload(); // Вызываем функцию перезагрузки после успешного обновления
     } catch (error) {
       console.log(error);
       Alert.alert("Ошибка", "Не удалось обновить количество продукта");
     }
+
+    reload();
   };
 
   return (
@@ -141,6 +154,9 @@ export const ProductInBasketComponent = ({ imageSrc, title, price, id, productCo
             <Plus>+</Plus>
           </TouchableOpacity>
         </ProductInBasketCount>
+        <TouchableOpacity onPress={deleteProduct} style={{position: 'absolute', top: 0, right: -10}}>
+          <Image source={require('../images/delete.png')}/>
+        </TouchableOpacity>
         <ProductPrice>{count * price} ₽</ProductPrice>
       </ProductInBasketArea>
     </ProductInBasket>

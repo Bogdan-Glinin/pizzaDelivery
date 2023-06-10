@@ -15,10 +15,9 @@ import {
 import { Product } from '../components/product';
 import React, { useState, useRef } from 'react';
 import { Loading } from '../components/Loading';
-import { HomeHeader } from '../components/HomeHeader';
 import styled from 'styled-components/native';
 import { AnotherProduct } from '../components/anotherProduct';
-import { State } from 'react-native-gesture-handler';
+
 
 const TypeOfProduct = styled.Text`
   font-style: normal;
@@ -165,7 +164,7 @@ export const HomeScreen = ({ navigation }) => {
             if (obj.type == "drink") {
               return (
                 <TouchableOpacity onPress={() => {
-                  navigation.navigate('Pizza', { id: obj.id, title: obj.name });
+                  navigation.navigate('AnotherProduct', { id: obj.id, title: obj.name });
                 }}>
                   <AnotherProduct key={obj.id}
                     productName={obj.name}
@@ -185,7 +184,7 @@ export const HomeScreen = ({ navigation }) => {
             if (obj.type == "sause") {
               return (
                 <TouchableOpacity onPress={() => {
-                  navigation.navigate('Pizza', { id: obj.id, title: obj.name });
+                  navigation.navigate('AnotherProduct', { id: obj.id, title: obj.name });
                 }}>
                   <AnotherProduct key={obj.id}
                     productName={obj.name}

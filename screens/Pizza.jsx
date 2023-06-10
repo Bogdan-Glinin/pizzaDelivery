@@ -5,6 +5,7 @@ import axios from "axios";
 import { Loading } from "../components/Loading";
 import state from "../state/state";
 import { userId } from "./Profile";
+import { useIsFocused } from "@react-navigation/native";
 
 
 const ProductImage = styled.Image`
@@ -110,7 +111,10 @@ export const PizzaScreen = ({ route, navigation }) => {
         navigation.navigate('Корзина');
     }
 
+    const isFocused = useIsFocused();
+
     React.useEffect(() => {
+        if (isFocused) {
         navigation.setOptions({
             title,
         })
@@ -126,7 +130,7 @@ export const PizzaScreen = ({ route, navigation }) => {
             }).finally(() => {
                 setIsLoading(false);
             });
-    }, []);
+    }}, []);
 
     if (isLoading) {
         return (
@@ -151,12 +155,7 @@ export const PizzaScreen = ({ route, navigation }) => {
         setPrice(data.price[2]);
     }
 
-    const pushDataToBasket = data;
 
-    const addToBasket = () => {
-        state.basket.push({ data: data, price: price })
-        navigation.navigate('Корзина');
-    };
 
     if(userId != null){
         return (

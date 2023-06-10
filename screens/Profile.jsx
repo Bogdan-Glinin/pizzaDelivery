@@ -1,9 +1,11 @@
 import { RefreshControl, ScrollView, Text, TextInput, Touchable, TouchableOpacity, View, Alert } from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import styled from "styled-components";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Loading } from "../components/Loading";
+import { useIsFocused } from "@react-navigation/native";
+import { ProfileHeader } from "../components/ProfileHeader";
 
 const Stack = createNativeStackNavigator();
 
@@ -115,7 +117,14 @@ const SignIn = ({ navigation }) => {
         }
     }
 
-    React.useEffect(fetchUsers, []);
+    const isFocused = useIsFocused();
+
+    useEffect(() => {
+        if (isFocused) {
+            fetchUsers();
+        }
+      }, [isFocused]);
+
 
     if (isLoading) {
         return (
@@ -139,7 +148,7 @@ const SignIn = ({ navigation }) => {
                     Вход
                 </Title>
                 <Login onChangeText={handleLoginChange} placeholder={'Логин'} />
-                <Password onChangeText={handlePasswordChange} placeholder={'Пароль'} />
+                <Password onChangeText={handlePasswordChange} secureTextEntry placeholder={'Пароль'} />
                 <TouchableOpacity style={{ width: '100%', alignItems: 'center' }} onPress={logIn}>
                     <SignInButton>
                         <SignInButtonText>
@@ -227,7 +236,7 @@ const SignUp = ({ navigation }) => {
         }
 
         // Проверка на наличие ошибок
-        if (errors.length < 0) {
+        if (errors.length > 0) {
             // Объединение ошибок в одну строку
             const errorMessage = errors.join('\n');
             // Вывод Alert с ошибками
@@ -252,6 +261,8 @@ const SignUp = ({ navigation }) => {
         }
 
         userExist = false;
+        userId = users.length + 1;
+        navigation.navigate('Профиль');
     }
 
     React.useEffect(fetchUsers, []);
@@ -266,7 +277,7 @@ const SignUp = ({ navigation }) => {
         <ScrollView refreshControl={<RefreshControl color="red" refreshing={isLoading} onRefresh={fetchUsers} />}>
             <View style={{ justifyContent: 'center', alignItems: 'center' }}>
                 <Title>
-                    Вход
+                    Регистрация
                 </Title>
                 <Login
                     onChangeText={handleLoginChange}
@@ -292,8 +303,6 @@ const SignUp = ({ navigation }) => {
                 {passwordError ? <Text>{passwordError}</Text> : null}
                 <TouchableOpacity onPress={() => {
                     createUser();
-                    userId = users.length + 1;
-                    navigation.navigate('Профиль')
                 }} style={{ width: '100%', alignItems: 'center' }}>
                     <SignInButton>
                         <SignInButtonText>
@@ -329,6 +338,9 @@ const ExitButtonArea = styled.View`
     height: 30px;
     border: 1px solid rgba(0, 0, 0, 0.7);
     border-radius: 10px;
+    margin: 0 auto;
+    margin-top: 20px;
+    margin-bottom: 20px;
 `
 
 const Exit = styled.Text`
@@ -340,8 +352,26 @@ const Exit = styled.Text`
     color: rgba(0, 0, 0, 0.7);   
 `
 
+const UserHistoryArea = styled.View`
+    margin-top: 30px;
+`;
+
+
+const UserHistoryComponent = (props) => {
+
+    return(
+        <View style={{width: '100%', justifyContent: 'center', borderTopWidth: 1, borderBottomWidth: 1, paddingVertical: 10}}>
+            <Text>Кол-во товара: {props.totalCount}</Text>
+            <Text>Общая стоимость: {props.totalPrice}</Text>
+        </View>
+    )
+
+    
+}
+
 const ProfileComponent = ({ navigation }) => {
 
+    const[history, setHistory] = useState([]);
     const [user, setUser] = useState([]);
     const [isLoading, setIsLoading] = React.useState(true);
 
@@ -360,7 +390,39 @@ const ProfileComponent = ({ navigation }) => {
             });
     };
 
-    React.useEffect(fetchUsers, []);
+    const fetchHistory = () =>{
+        setIsLoading(true);
+        axios
+        .get('https://64823f6d29fa1c5c5032c2e2.mockapi.io/history')
+        .then(({ data }) => {
+            setHistory(data);
+        })
+        .catch(err => {
+            console.log(err);
+            Alert.alert('Ошибка', 'Не удалось получить историю');
+        }).finally(() => {
+            setIsLoading(false);
+        });
+    }
+
+    var userHistoryArray = [];
+    history.filter((obj) => {
+        if(obj.userId === userId){
+            userHistoryArray.push(obj);
+        }
+    });
+
+
+    const isFocused = useIsFocused();
+
+      useEffect(() => {
+        if (isFocused) {
+          // Код, который должен выполняться при каждом переходе на эту страницу
+          fetchUsers()
+          fetchHistory()
+
+        }
+      }, [isFocused]);
 
     if (isLoading) {
         return (
@@ -369,9 +431,19 @@ const ProfileComponent = ({ navigation }) => {
     }
 
     return (
-        <ScrollView style={{paddingHorizontal: 10}} refreshControl={<RefreshControl color="red" refreshing={isLoading} onRefresh={fetchUsers} />}>
+        <ScrollView style={{paddingHorizontal: 10}} refreshControl={<RefreshControl color="red" refreshing={isLoading} onRefresh={fetchHistory} />}>
             <UserName>{user.name}</UserName>
             <UserEmail>{user.email}</UserEmail>
+            <UserHistoryArea>
+                <Text>Мои заказы</Text>
+                {
+                    userHistoryArray.map((obj) =>{
+                        return(
+                            <UserHistoryComponent totalPrice={obj.totalPrice} totalCount={obj.totalCount}/>
+                        )
+                    })
+                }
+            </UserHistoryArea>
             <TouchableOpacity onPress={() => {
                 userId = null;
                 navigation.navigate('Вход');
@@ -387,8 +459,22 @@ const ProfileComponent = ({ navigation }) => {
 export const Profile = () => {
     return (
         <Stack.Navigator>
-            <Stack.Screen name="Вход" component={SignIn} />
-            <Stack.Screen name="Регистрация" component={SignUp} />
+            <Stack.Screen name="Вход" component={SignIn} 
+            options={{
+                headerTitle: () => <ProfileHeader/>,
+                headerShadowVisible: false,
+                headerStyle: { backgroundColor: "#fff" },
+            }}
+            />
+            <Stack.Screen name="Регистрация" component={SignUp} 
+            options={{
+                headerTitle: () => <ProfileHeader/>,
+                headerShadowVisible: false,
+                headerStyle: { backgroundColor: "#fff" },
+                headerLeft: null,
+          headerBackVisible: false,
+            }}
+            />
             <Stack.Screen name="Профиль" component={ProfileComponent} options={{
           headerLeft: null,
           headerBackVisible: false,

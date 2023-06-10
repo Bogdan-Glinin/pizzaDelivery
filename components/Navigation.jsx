@@ -8,6 +8,7 @@ import { SomeComponent } from "./someComponent";
 import { Image } from "react-native";
 import {BasketScreen} from "../screens/Basket"
 import {Profile} from "../screens/Profile"
+import {AnotherProductScreen} from "../screens/AnotherProduct"
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -27,6 +28,11 @@ const HomeScreenNavigation = () => {
             <Stack.Screen
                 name="Pizza"
                 component={PizzaScreen}
+                options={{ title: "Конкретная пицца", headerShadowVisible: false }}
+            />
+            <Stack.Screen
+                name="AnotherProduct"
+                component={AnotherProductScreen}
                 options={{ title: "Конкретная пицца", headerShadowVisible: false }}
             />
         </Stack.Navigator>
